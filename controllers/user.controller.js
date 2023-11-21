@@ -1,6 +1,7 @@
 import express from "express";
 import bcrypt from "bcrypt";
 import User from "../models/user.model.js";
+import jwt from "jsonwebtoken";
 
 class UserController {
     static register = async (req, res) => {
@@ -23,7 +24,11 @@ class UserController {
                             tc: tc
                         });
                         await newUser.save();
-                        return res.status(201).json({ message: "User created successfully" });
+                        // const saved_user = await User.findOne({ email });
+                        const saved_user = await User.findOne({ email }, { password: 0 });
+                        // generate token 
+                        const token = await jwt.sign({ id: saved_user._id }, process.env.SECRET_KEY, { expiresIn: "1d" });
+                        return res.status(201).json({ message: "User created successfully", token: token });
                     } catch (error) {
                         return res.status(500).json({ message: error.message });
                     }
@@ -43,7 +48,10 @@ class UserController {
                 if (user) {
                     const validity = await bcrypt.compare(password, user.password);
                     if (user.email === email && validity) {
-                        res.status(200).json({ message: "Login successful" });
+                        // generate token 
+                        const token = await jwt.sign({ id: user._id }, process.env.SECRET_KEY, { expiresIn: "1d" });
+                        // return response
+                        res.status(200).json({ message: "Login successful", token: token });
                     } else {
                         res.status(401).json({ message: "Invalid credentials" });
                     }
@@ -56,6 +64,9 @@ class UserController {
         } catch (error) {
             res.status(500).json({ message: error.message });
         }
+    }
+    static changePassword = async (req, res) => {
+        res.send("Change password");
     }
     static getAll = async (req, res) => {
         res.send("Get all users");
