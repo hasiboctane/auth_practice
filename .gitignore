@@ -1,0 +1,10 @@
+#make a gitignore code 
+
+# Ignore node_modules directory
+node_modules/
+
+# Ignore .env file
+.env
+
+# Ignore log files
+*.log
